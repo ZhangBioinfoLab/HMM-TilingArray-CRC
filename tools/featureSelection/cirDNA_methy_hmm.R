@@ -23,7 +23,14 @@
 rm(list=ls(all=TRUE))
 
 #######################   Initialization   ################
-library(optparse)
+pkgTest <- function(x)
+{
+    if (!require(x,character.only = TRUE)){
+        install.packages(x,dep=TRUE,repos="http://cran.rstudio.com/")
+        if(!require(x,character.only=TRUE)) stop("PACKAGE not found")
+    }
+}
+pkgTest("optparse")
 
 option_list = list(
         make_option(c("-i","--training"),dest = "training",
@@ -61,11 +68,11 @@ if(is.null(opt$training) || is.null(opt$output)|| is.null(opt$testing) ){
 }
 
 #libraries to load
-library(HiddenMarkov)
-library(tools)
-library(markovchain)
-library(MASS)
-library(Biobase)
+pkgTest("HiddenMarkov")
+pkgTest("tools")
+pkgTest("markovchain")
+pkgTest("MASS")
+pkgTest("Biobase")
 
 
 cat("\n","Initializing the environment and loading data...","\n")
