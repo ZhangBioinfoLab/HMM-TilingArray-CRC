@@ -53,14 +53,10 @@ option_list = list(
         make_option("--proportion",type="double",dest="proportion",default=0.8,
                     help = "proportion of positive states in window,
                     [default] = 0.8"),
-        make_option(c("-p","--permutation"),dest="permutation",action="store_true",default=FALSE,
-                    help = "whether to do permutation test, if set, permutate the order of probes
-                    [default] = FALSE"),
-        make_option(c("-n","--number"),dest="number",default=2000,
-                    help = "the number of features to retain. [DEFAULT]=2000"),
-        make_option("--hmm",dest="hmmoption",default="qvalue",
-                    help = "the hmm option,choose from qvalue,logFC,tstatisic,[DEFAULT]=qvalue")
+        make_option(c("-n","--number"),dest="number",default=50,
+                    help = "the number of features to retain. [DEFAULT]=50")
         )
+
 opt = parse_args(OptionParser(option_list=option_list))
 if(is.null(opt$training) || is.null(opt$output)|| is.null(opt$testing) ){
         print_help(OptionParser(option_list=option_list))
@@ -83,10 +79,8 @@ output = opt$output
 diffOut = opt$diffOut
 saveMedium = opt$saveMedium
 proportion = opt$proportion
-permutation = opt$permutation
 iniWin = opt$iniWin
 number = opt$number
-hmmoption = opt$hmmoption
 # load or read training data
 if(file_ext(training) == 'txt'){
     train.matrix = as.matrix(read.delim(file = training))
@@ -112,15 +106,6 @@ if(file_ext(testing) == 'txt'){
     
 }
 
-#################   Doing permutation ###################
-if ( permutation == T){
-    cat("\n","permutate the data, shuffle the intensity for each sample...","\n")
-    numProbe = nrow(train.matrix)
-    for( i in 1:ncol(train.matrix)){
-            perm = sample(numProbe,numProbe)
-            train.matrix[,i] = train.matrix[perm,i]
-    }
-}
 
 
 #################   Generating probe info ################
@@ -688,107 +673,62 @@ probe_len = nrow(probe)
 cat("\n","the size of the data is...",probe_len)
 nchr = length(levels(probe$chr))
 
-if(hmmoption == 'qvalue'){
-    cat("\n","Start splitting data into subgroups...","\n")
-    pvalue_list = splitGroup(probe,1000)
-    pvalue_groupByChr = with(probe,split(pvalue,chr))
-    #print(str(pvalue_groupByChr))
-    #pvalue_groupByChr = with(probe,split(pvalue,chr))
-    #print(str(pvalue_groupByChr))
+cat("\n","Start splitting data into subgroups...","\n")
+pvalue_list = splitGroup(probe,1000)
+pvalue_groupByChr = with(probe,split(pvalue,chr))
 
-    cat("\n","Start K-mean Clustering...","\n")
-    qvalue_kmeans = kmeans_emission(pvalue_groupByChr,nchr)
-    pvalue_list_by_cluster = qvalue_kmeans$emit_list_by_cluster
-    Pi_list = qvalue_kmeans$Pi_list
-    kmeans_result = qvalue_kmeans$kmeans_result
-    cluster = createQvalueCluster(nchr,pvalue_list_by_cluster)
+cat("\n","Start K-mean Clustering...","\n")
+qvalue_kmeans = kmeans_emission(pvalue_groupByChr,nchr)
+pvalue_list_by_cluster = qvalue_kmeans$emit_list_by_cluster
+Pi_list = qvalue_kmeans$Pi_list
+kmeans_result = qvalue_kmeans$kmeans_result
+cluster = createQvalueCluster(nchr,pvalue_list_by_cluster)
 
-    cat("\n","Start estimating beta distribution from the clusters(step1 for hmm)...","\n")
-    cluster = estBetaDist(pvalue_list_by_cluster,cluster)
-    print(cluster)
+cat("\n","Start estimating beta distribution from the clusters(step1 for hmm)...","\n")
+cluster = estBetaDist(pvalue_list_by_cluster,cluster)
+print(cluster)
 
-    cat("\n","Start estimating chromosome transition prob and beta parameters(step2 for hmm)...","\n")
-    qvalue_hmm = hmm_train(cluster,kmeans_result,pvalue_groupByChr)
-    hmm_list = qvalue_hmm$hmm_list
-    cluster_matrix = qvalue_hmm$cluster_matrix
+cat("\n","Start estimating chromosome transition prob and beta parameters(step2 for hmm)...","\n")
+qvalue_hmm = hmm_train(cluster,kmeans_result,pvalue_groupByChr)
+hmm_list = qvalue_hmm$hmm_list
+cluster_matrix = qvalue_hmm$cluster_matrix
 
-    cat("\n","Start predicting hidden states (step3 for hmm)...","\n")
-    pstates_list = hmm_predict(nchr,pvalue_list,cluster_matrix)
+cat("\n","Start predicting hidden states (step3 for hmm)...","\n")
+pstates_list = hmm_predict(nchr,pvalue_list,cluster_matrix)
 
-    cat("\n","Start summarizing state info...","\n")
-    stateInfo = update_qvalue_state(nchr,pvalue_groupByChr,pstates_list)
-    print(stateInfo)
+cat("\n","Start summarizing state info...","\n")
+stateInfo = update_qvalue_state(nchr,pvalue_groupByChr,pstates_list)
+print(stateInfo)
 
-    cat("\n","Start merging positive states...","\n")
-    mergedStates = lapply(1:nchr,function(x) list())
-    for( i in 1:nchr ){
+cat("\n","Start merging positive states...","\n")
+mergedStates = lapply(1:nchr,function(x) list())
+for( i in 1:nchr ){
             mergedStates[i] = list(mergePosStates(pstates_list[[i]],stateInfo$posState[i],
                                                   initWindowSize=iniWin,
                                                   stateProportion=proportion))
     }
 
-    cat("\n","Start getting the merged data frame of training set...","\n")
-    merged_train.dataframe = getMergedDataFrame(mergedStates,train.matrix)
+cat("\n","Start getting the merged data frame of training set...","\n")
+merged_train.dataframe = getMergedDataFrame(mergedStates,train.matrix)
 
-    cat("\n","Start calculating the merged region's p value...","\n")
-    qvalue_sig_merged = getSig_merged(merged_train.dataframe,number)
-    sigIndex = qvalue_sig_merged$sigIndex
-    if(saveMedium == T){
-            cat("\n","Start saving medium results...","\n")
-            merged_pvalues_ad = qvalue_sig_merged$merged_pvalues_ad
-            merged_feature_names = qvalue_sig_merged$merged_feature_names
-            sigMergedStates_pvalues_ad = qvalue_sig_merged$sigMergedStates_pvalues_ad
-            sigMergedStates_logfc = qvalue_sig_merged$sigMergedStates_logfc
-            sigMergedFeatureNames = qvalue_sig_merged$sigMergedFeatureNames
-            merged_logfc = qvalue_sig_merged$merged_logfc
-            write.table(data.frame(feature=merged_feature_names,qvalue = merged_pvalues_ad ,log_fc = merged_logfc),
-                file=paste(output,"_hmm_qvalue_logfc",".txt",sep=""),quote=F,row.names=F,sep="\t")
-            save(merged_pvalues_ad,merged_feature_names,pstates_list,sigMergedStates_pvalues_ad,sigMergedStates_logfc,sigMergedFeatureNames,
-                stateInfo,mergedStates,merged_logfc,file = paste(output,"_mediumResult",".RData",sep=""))
-    }
-
-    getTrain_test_data(merged_train.dataframe,sigIndex,mergedStates,output,test.matrix,'qvalue')
-
-}else if(hmmoption == 'logFC'){
-    cat("\n","Start splitting data into subgroups...","\n")
-    pvalue_list = splitGroup(probe,1000)
-    logfc_groupByChr = with(probe,split(log_fc,chr))
-
-    print(str(logfc_groupByChr))
-
-    cat("\n","Start K-mean Clustering...","\n")
-    logfc_kmeans = kmeans_emission_logfc(logfc_groupByChr,nchr)
-    logfc_list_by_cluster = logfc_kmeans$emit_list_by_cluster
-    Pi_list = logfc_kmeans$Pi_list
-    kmeans_result = logfc_kmeans$kmeans_result
-    cluster = createLogFCCluster(nchr,logfc_list_by_cluster)
-    print(cluster)
-
-
-    cat("\n","Start estimating chromosome transition prob and gaussian parameters(step2 for hmm)...","\n")
-    qvalue_hmm = hmm_train_logfc(cluster,kmeans_result,logfc_groupByChr)
-    hmm_list = qvalue_hmm$hmm_list
-    cluster_matrix = qvalue_hmm$cluster_matrix
-
-    cat("\n","Start predicting hidden states (step3 for hmm)...","\n")
-    pstates_list = hmm_predict(nchr,pvalue_list,cluster_matrix)
-
-    cat("\n","Start summarizing state info...","\n")
-    stateInfo = update_logfc_state(nchr,pvalue_groupByChr,pstates_list)
-    print(stateInfo)
-
-
-}else if(hmmoption == 'tstatisic'){
-    library(tileHMM)
-    cat("\n","t statistics: initial estimate...","\n")
-    trainLabel = factor(do.call(rbind,strsplit(colnames(train.matrix),'_'))[,2])
-    trainLabel_number = sapply(trainLabel,function(x) {if(x=="CRC") return(1) else if(x=="CTR") return(2)})
-    train_tstat = shrinkt.st(train.matrix,trainLabel_number,verbose=1)
-    hmm_t_init = hmm.setup(train_tstat,state=c("cancer","normal"),pos.state=1)
-    gap_split = function(pos_list,max_gap){
-         
-    }
-
+cat("\n","Start calculating the merged region's p value...","\n")
+qvalue_sig_merged = getSig_merged(merged_train.dataframe,number)
+sigIndex = qvalue_sig_merged$sigIndex
+if(saveMedium == T){
+        cat("\n","Start saving medium results...","\n")
+        merged_pvalues_ad = qvalue_sig_merged$merged_pvalues_ad
+        merged_feature_names = qvalue_sig_merged$merged_feature_names
+        sigMergedStates_pvalues_ad = qvalue_sig_merged$sigMergedStates_pvalues_ad
+        sigMergedStates_logfc = qvalue_sig_merged$sigMergedStates_logfc
+        sigMergedFeatureNames = qvalue_sig_merged$sigMergedFeatureNames
+        merged_logfc = qvalue_sig_merged$merged_logfc
+        write.table(data.frame(feature=merged_feature_names,qvalue = merged_pvalues_ad ,log_fc = merged_logfc),
+            file=paste(output,"_hmm_qvalue_logfc",".txt",sep=""),quote=F,row.names=F,sep="\t")
+        save(merged_pvalues_ad,merged_feature_names,pstates_list,sigMergedStates_pvalues_ad,sigMergedStates_logfc,sigMergedFeatureNames,
+            stateInfo,mergedStates,merged_logfc,file = paste(output,"_mediumResult",".RData",sep=""))
 }
+
+getTrain_test_data(merged_train.dataframe,sigIndex,mergedStates,output,test.matrix,'qvalue')
+
 
 
