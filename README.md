@@ -1,4 +1,4 @@
-#HMM-based Biomarker Discovery and Machine Learning Classifier Construction of Colorectal Cancer
+#QHMM: a program for cancer biomarker discovery with circulating DNA methylation tiling array
 
 ##Synopsis
 
