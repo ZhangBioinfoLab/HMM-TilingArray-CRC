@@ -71,4 +71,6 @@ Options:
 
     -h, --help
         Show this help message and exit
+        
+More manuals for other tools will be coming soon.
 
