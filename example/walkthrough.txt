@@ -1,0 +1,35 @@
+This is a walkthrough example on the toy dataset
+lines starting with # symbol are comments
+
+1.System Requirement:
+R 3.1.1 or R 3.2.2, python 2.7.10 (Rscript and python binaries are supposed to exist system path)
+We assume the current path is in HMM-TilingArray-CRC/ if the user download the whole folder from githup
+
+2.Install dependencies
+#please refer to /installation/INSTALL.md for detailed package list
+cd tools/installation
+Rscript install_dependencies.R
+
+3.Differential analysis, hmm, and sliding window merge
+#please refer to cirDNA_methy_hmm.R in MANUAL.txt for detailed usage information
+cd ../../example/
+mkdir toy_output
+#Here we run cirDNA_methy_hmm.R to generate the data after feature selection, -d means we want to also generate the differential analysis result
+Rscript ../tools/featureSelection/cirDNA_methy_hmm.R -i toy_dataset_1000f_train.txt -t toy_dataset_1000f_test.txt -o toy_output/toy -d
+#Following comments in this section describe the output from cirDNA_methy_hmm.R
+#toy_qvalue_logfc.txt contains the differential analysis result for all features provided in the training dataset
+#toy_trainDiff.txt and toy_testDiff.txt are the result files after t-test based feature selection, first line in these files show the top n features
+#toy_trainHMMqvalue.txt and toy_testHMMqvalue.txt are the result files after qhmm feature selection, the number of features after this step maybe less than the provided n because qhmm merge adjacent features
+
+4.Building diagnostic classifiers based on qhmm derived features
+#Here we run ML_classification.R to build random forest and gbm diagnostic classifiers based on qhmm derived features
+Rscript ../tools/classification/ML_classification.R -i toy_output/toy_trainHMMqvalue.txt -t toy_output/toy_testHMMqvalue.txt -I toy_dataset_train_label.txt -T toy_dataset_test_label.txt -o toy_output/toy_qhmm -c rf,gbm
+#Following comments in this section describe the output from ML_classication.R
+#toy_qhmm_MLROC.pdf and all *.pdf files are pictures showing the performance of classifier and classifier tuning process
+#toy_qhmm_gbm.RData and toy_qhmm_rf.RData are the actual classifer in RData format, user can load these two RData in R console and use them for later testing data
+
+5.Building diagnostic classifiers based on t-test derived features
+#We run ML_classification.R for t-test derived features and compare the classifier performance with qhmm derived features
+Rscript ../tools/classification/ML_classification.R -i toy_output/toy_trainDiff.txt -t toy_output/toy_testDiff.txt -I toy_dataset_train_label.txt -T toy_dataset_test_label.txt -o toy_output/toy_ttest -c rf,gbm
+#Compare toy_qhmm_MLROC.pdf and toy_ttest_MLROC.pdf
+#In my machine, the ROC for qhmm and t-test features are around 70% and 60% on this toy dataset. It is very straightforward that qhmm is much more effective than t-test based filtering method.

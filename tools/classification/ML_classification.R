@@ -1,7 +1,6 @@
 #-------------------INFO----------------------
 #
 # author: Junjiang Lin
-# date: 2015-03-20
 # email: junjianglin@cs.toronto.com
 
 #
@@ -20,13 +19,8 @@
 
 # This r script is used to do classification with 
 # 1.svm, 
-# 2.neural net,
-# 3.random forest, 
-# 4.recursive partitioning, 
-# 5.stochastic gradient boosting, 
-# 6.c5.0,
-# 7.boosted logistic regression
-# 8.knn
+# 2.random forest,  
+# 3.gradient boosting machine
 
 
 #######################   Initialization   ################
@@ -307,6 +301,8 @@ if ('svm' %in% classifier || 'all' %in% classifier){
   pdf(file=paste(output,"_SVM_Hyper",".pdf",sep=""))
   print(plot)
   dev.off()
+  save(svm_tr,file=paste(output,"_svm.RData",sep=""))
+
   svm_pred = predict(svm_tr,newdata=testSet_svm)
   svm_pred_prob = predict(svm_tr,newdata = testSet_svm, type='prob')
   svm_table = caret::confusionMatrix(data = svm_pred, testLabel)
@@ -418,6 +414,7 @@ if("rf" %in% classifier || 'all' %in% classifier){
   #                            tuneLength = 1,
   #                            metric = "ROC",
   #                            trControl = rfctrl)
+  save(rf_tr,file=paste(output,"_rf.RData",sep=""))
 
   rf_pred = predict(rf_tr,newdata=testSet_rf)
   rf_pred_prob = predict(rf_tr,newdata=testSet_rf,type = "prob")
@@ -497,6 +494,7 @@ if("gbm" %in% classifier || 'all' %in% classifier){
   pdf(file=paste(output,"_GBM_Hyper",".pdf",sep=""))
   print(plot)
   dev.off()
+  save(gbm_tr,file=paste(output,"_gbm.RData",sep=""))
   gbm_pred = predict(gbm_tr,newdata=testSet)
   gbm_pred_prob = predict(gbm_tr,newdata=testSet,type = "prob")
   gbm_table = caret::confusionMatrix(data = gbm_pred, testLabel)

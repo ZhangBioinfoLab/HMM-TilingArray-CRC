@@ -1,0 +1,74 @@
+This is a manual for most of major programs in the tools folder
+We highly encourge users to try qhmm on the toy dataset in /example folder and follow the /example/walkthrough.txt file.
+The default usage manual for each program can also be found by typing:
+Rscript [program.R] -h 
+or python [program.py] -h
+
+1. cirDNA_methy_hmm.R
+Description: The main feature selection tool, implementing differential analysis, HMM framework, and sliding window combination algorithm, the input is the training and testing dataset, and it outputs the data after feature selection, cirDNA_methy_hmm also provides options for generating intermediate differential analysis result and hmm state result.
+
+Usage: Rscript cirDNA_methy_hmm.R [Options]
+Options:
+    -i TRAINING, --training=TRAINING
+        the traing data of tilling array(after normalization), txt file, please check example/toy_dataset_1000f_train.txt for detailed format, noted that the name of all control samples must be ended with string 'CTR', and feature name must contain chromosome number and its position 
+
+    -t TESTING, --testing=TESTING
+        the testing set of tilling array(after normalization), txt file, in the same format as training dataset
+
+    -o OUTPUT, --output=OUTPUT
+        the primary name of output file
+
+    -d, --differentialOutput
+        whether output differential analysis based on t test
+
+    -s SEED, --seed=SEED
+        the seed for reproducible research,
+                    [default] = 1
+
+    --saveMedium
+        whether to save the intermediate hmm results to analyze hidden states,
+                    [default] = FALSE
+
+    --iniWin=INIWIN
+        Initial window size for merging,
+                    [default] = 15
+
+    --proportion=PROPORTION
+        proportion of positive states in sliding window,
+                    [default] = 0.8
+
+    -n NUMBER, --number=NUMBER
+        the number of features to retain. [DEFAULT]=50
+
+    -h, --help
+        Show this help message and exit
+
+2. ML_classification.R
+Description: Building classifiers based on SVM, Random Forest, and Gradient Boosting Machine algorithms, ML_classification.R take in the resulting training and testing data from cirDNA_methy_hmm.R along with corresponding labels and generate diagnostic classifiers
+
+Usage: Rscript ML_classification.R [Options]
+Options:
+    -i TRAINING, --training=TRAINING
+        the training set, generated from cirDNA_methy_hmm.R, should be in txt, or RData format
+
+    -t TESTING, --testing=TESTING
+        the testing set, generated from cirDNA_methy_hmm.R, should be in txt, or RData format
+
+    -I TRAININGLABEL, --trainingLabel=TRAININGLABEL
+        label file for training data
+
+    -T TESTINGLABEL, --testingLabel=TESTINGLABEL
+        label file for testing data
+
+    -o OUTPUT, --output=OUTPUT
+        the primary name of output file
+
+    -s SEED, --seed=SEED
+        the seed, [Default] = 1
+
+    -c CLASSIFIER, --classifier=CLASSIFIER
+        choosing two or three classification algorithms from svm,rf,gbm (pls follow the order), [Default]=all
+
+    -h, --help
+        Show this help message and exit
+
