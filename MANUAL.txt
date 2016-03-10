@@ -72,6 +72,56 @@ Options:
     -h, --help
         Show this help message and exit
         
+3. randomProbe.R
+Description: Randomly select a specified number of features from the tiling array or microarray data. The main purpose of this program is to verifying the null hypothesis that QHMM would not improve classification performance is not correct. It can also be used to simulate the random process of feature selection.
+
+Usage: Rscript randomProbe.R [Options]
+Options:
+    -i TRAINING, --training=TRAINING
+        the traing data of tilling array(after normalization), txt file, please check example/toy_dataset_1000f_train.txt for detailed format, noted that the name of all control samples must be ended with string 'CTR', and feature name must contain chromosome number and its position
+
+    -t TESTING, --testing=TESTING
+        the testing set of tilling array(after normalization), txt file, in the same format as training dataset
+
+    -o OUTPUT, --output=OUTPUT
+        the primary name of output file
+
+    -s SEED, --seed=SEED
+        the seed, [Default] = 1
+
+    -n NUMBER, --number=NUMBER
+        the number of features to retain. [DEFAULT] = 2000
+
+    -h, --help
+        Show this help message and exit
+
+4. rfe.R
+Description: This program can help the user choose appropriate number of feature size according the result from recursive feature selection. It will start with all features in the dataset and each time remove 10 least significant features, and generate a final statistics graph. Users can then decide what feature size is appropriate. The classification algorithm used to RFE is random forest. (Warning: this program may take a while to run if the size of dataset is big)
+
+Usage: Rscript rfe.R [Options]
+Options:
+    -i TRAINING, --training=TRAINING
+        the traing data of tilling array(after normalization), txt file, please check example/toy_dataset_1000f_train.txt for detailed format, noted that the name of all control samples must be ended with string 'CTR', and feature name must contain chromosome number and its position
+
+    -t TESTING, --testing=TESTING
+        the testing set of tilling array(after normalization), txt file, in the same format as training dataset
+
+    -I TRAININGLABEL, --trainingLabel=TRAININGLABEL
+        label file for training data
+
+    -T TESTINGLABEL, --testingLabel=TESTINGLABEL
+        label file for testing data
+
+    -o OUTPUT, --output=OUTPUT
+        the primary name of output file
+
+    -s SEED, --seed=SEED
+        the seed, [Default] = 1
+
+    -h, --help
+        Show this help message and exit
+
+
 More manuals for other tools will be coming soon.
 
 
