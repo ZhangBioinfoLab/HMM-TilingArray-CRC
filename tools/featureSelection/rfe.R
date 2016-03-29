@@ -63,14 +63,14 @@ output = opt$output
 
 # load or read training data
 if(file_ext(training) == 'txt'){
-    trainSet = read.delim(file = training)
+    trainSet = t(read.delim(file = training))
 } else if(file_ext(training) == 'RData'){
     trainSet = get(load(training))
 }
 
 # load or read testing data
 if(file_ext(testing) == 'txt'){
-    testSet = read.delim(file = testing)
+    testSet = t(read.delim(file = testing))
 } else if(file_ext(testing) == 'RData'){
     testSet = get(load(testing))
 }
