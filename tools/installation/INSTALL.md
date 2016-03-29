@@ -2,7 +2,7 @@
 All tools in QHMM are developed in R 3.1.1, Python 2.7.10 and tested in R 3.1.1, 3.2.2, and Python 2.7.10
 
 ##Install dependencies
-Please run the following command to install R dependencies before any other tools:
+Please run the following command to install R dependencies before any other executions:
 ```bash
 Rscript install_dependencies.R 
 ```
