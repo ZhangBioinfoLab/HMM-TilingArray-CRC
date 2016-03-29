@@ -2,7 +2,7 @@ This is a walkthrough example on the toy dataset
 lines starting with # symbol are comments
 
 1.System Requirement:
-R 3.1.1 or R 3.2.2, python 2.7.10 (Rscript and python binaries are supposed to exist system path)
+R 3.1.1 or R 3.2.2, python 2.7.10 (Rscript and python binaries are supposed to exist in system path)
 We assume the current path is in HMM-TilingArray-CRC/ if the user download the whole folder from githup
 
 2.Install dependencies
