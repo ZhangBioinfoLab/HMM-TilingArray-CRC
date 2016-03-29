@@ -95,4 +95,4 @@ save(trainSet,file=paste(output,"_trainRand",".RData",sep=""))
 save(testSet,file=paste(output,"_testRand",".RData",sep=""))
 write.table(trainSet,file=paste(output,"_trainRand",".txt",sep=""),quote=F,sep="\t")
 write.table(testSet,file=paste(output,"_testRand",".txt",sep=""),quote=F,sep="\t")
-
+ 
