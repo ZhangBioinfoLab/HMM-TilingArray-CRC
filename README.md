@@ -29,10 +29,14 @@ Please refer to the MANUAL.txt for detailed usage information for different tool
 
 ##Contributors
 Junjiang Lin, Department of Computer Science, Terrence Donnelly Centre for Cellular and Bimolecular Research, University of Toronto, Toronto, Ontario,Canada
+
 Yue Li, Computer Science and Artificial Intelligence Laboratory, Massachusetts Institute of Technology, Cambridge, MA, United States
+
 Juozas Gordevicius, Institute of Mathematics and Informatics, Vilnius University, Vilnius, Lithuania
+
 Arturas Petronis, Krembil Family Epigenetics Laboratory, Campbell Family Mental Health Research Institute, Centre for Addition and Mental Health, Toronto, Ontario, Canada
-Zhaolei Zhang, Department of Computer Science, Terrence Donnelly Centre for Cellular and Bimolecular Research, University of Toronto, Toronto, Ontario,Canada, Banting and Best Department of Medical Research, Department of Molecular Genetics, University of Toronto, Ontario, Canada
+
+Zhaolei Zhang, Department of Computer Science, Terrence Donnelly Centre for Cellular and Bimolecular Research, University of Toronto, Toronto, Ontario, Canada, Banting and Best Department of Medical Research, Department of Molecular Genetics, University of Toronto, Ontario, Canada
 
 ##License
 GNU license is used for this project. All users have the freedoms to run, study, share, or modify the software.
