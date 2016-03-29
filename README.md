@@ -6,7 +6,8 @@ This repository provides all program tools and source code used in the project "
 1. Data Cleaning(Preprocessing, this step we provide recommended techniques, but users are free to choose their own preprocessing method)
 2. Feature Selection
 3. Classification
-4. Analysis
+4. Analysis.
+
 Interested users or readers can refer to the original study and supplementary file for further details.
 
 ##Motivation
